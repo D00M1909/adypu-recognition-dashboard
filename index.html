@@ -4,33 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Recognition Dashboard</title>
-<meta name="description" content="Mockup of an IQAC dashboard for accreditation, rankings, ratings and awards across all schools. Illustrative data.">
+<meta name="description" content="NAAC Attribute 4 workbooks: fill online or upload Excel, with live ratios and option checks.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d2350'/%3E%3Cpath d='M16 6l3 6.5 7 .8-5.2 4.8 1.4 7L16 21.6 9.8 25.1l1.4-7L6 13.3l7-.8z' fill='%23e9b824'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/app.css?v=3">
 </head>
 
 <body>
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="#/"><div class="mark">IQAC</div><div><b>Accreditation, Ranking, Awards &amp; Recognition</b><small>University Excellence 360° · Quality Recognition Dashboard</small></div></a>
-    <div class="spacer"></div>
-    <label class="inst">Viewing
-      <select id="inst"></select>
-    </label>
-    <span class="chip-sample">Mockup</span>
+    <a class="brand" href="#/"><div class="mark" id="brand-mark">IQAC</div><div><b id="brand-name">Recognition Dashboard</b><small id="brand-sub">NAAC readiness · IQAC</small></div></a>
+    <nav class="nav">
+      <a href="#/" data-r="">Attribute 4</a>
+      <a href="#/naac" data-r="naac">NAAC framework</a>
+      <a href="#/brand" data-r="brand">Customise</a>
+    </nav>
   </div>
 </header>
 <main class="wrap" id="app"></main>
-<div class="foot">Frameworks and weights follow the IQAC Quality Recognition Handbook (Complete Edition). Pages marked “Sample data” use illustrative figures.</div>
 
-<script src="js/status.js"></script>
-<script src="js/core.js"></script>
-<script src="js/content/accreditation.js"></script>
-<script src="js/content/ranking.js"></script>
-<script src="js/content/ratings.js"></script>
-<script src="js/content/awards.js"></script>
-<script src="js/content/reputation.js"></script>
-<script src="js/app.js"></script>
+<script src="js/core.js?v=3"></script>
+<script src="js/theme.js?v=3"></script>
+<script src="js/naac/formula.js?v=3"></script>
+<script src="js/naac/workbooks.js?v=3"></script>
+<script src="js/naac/workbook.js?v=3"></script>
+<script src="js/naac/sample.js?v=3"></script>
+<script src="js/naac/pages.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>
