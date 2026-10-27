@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Brand colours (--brand, --accent and friends) are set from the college's
+   branding at runtime; everything else is the ADYPU Compass family. */
+:root {
+  --brand: #C21B27; --brand-deep: #8b131c; --brand-night: #5e1219; --brand-night-deep: #34100f;
+  --brand-ink-light: #C21B27; --brand-ink-dark: #e8848b;
+  --accent: #C9A227; --accent-ink: #2b2208;
+
+  --surface: #eceff4;
+  --surface-raised: #ffffff;
+  --surface-sunk: #e3e8ef;
+  --hairline: #d6dce5;
+  --divider: #e5e9f0;
+  --dot: rgba(100, 116, 139, 0.2);
+  --ink: #0f172a;
+  --ink-body: #334155;
+  --ink-soft: #475569;
+  --ink-muted: #64748b;
+  --ink-faint: #94a3b8;
+  --good: #15803d; --good-bg: rgba(21, 128, 61, 0.11);
+  --warn: #a16207; --warn-bg: rgba(202, 138, 4, 0.14);
+  --bad: #b91c1c; --bad-bg: rgba(220, 38, 38, 0.11);
+  --info: #1d4ed8; --info-bg: rgba(37, 99, 235, 0.1);
+  --cream: #fffbe6; --cream-edge: #ecd98a;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 12px 28px -10px rgba(15, 23, 42, 0.2), 0 2px 6px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 30px 60px -20px rgba(15, 23, 42, 0.35);
+  --brand-ink: var(--brand-ink-light);
+  --header-from: var(--brand);
+  --header-to: var(--brand-deep);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --surface: #0b0f14;
+  --surface-raised: #131a23;
+  --surface-sunk: #0f151c;
+  --hairline: #253040;
+  --divider: #1e2834;
+  --dot: rgba(159, 176, 194, 0.12);
+  --ink: #e8eef5;
+  --ink-body: #c3cfdc;
+  --ink-soft: #a7b5c5;
+  --ink-muted: #8d9cae;
+  --ink-faint: #5b6879;
+  --good: #4ade80; --good-bg: rgba(74, 222, 128, 0.13);
+  --warn: #facc15; --warn-bg: rgba(250, 204, 21, 0.13);
+  --bad: #f87171; --bad-bg: rgba(248, 113, 113, 0.14);
+  --info: #93c5fd; --info-bg: rgba(147, 197, 253, 0.13);
+  --cream: #2a2614; --cream-edge: #5c5126;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 28px -10px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+  --brand-ink: var(--brand-ink-dark);
+  --header-from: var(--brand-night);
+  --header-to: var(--brand-night-deep);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-sunk: var(--surface-sunk);
+  --color-hairline: var(--hairline);
+  --color-divider: var(--divider);
+  --color-ink: var(--ink);
+  --color-body: var(--ink-body);
+  --color-soft: var(--ink-soft);
+  --color-muted: var(--ink-muted);
+  --color-faint: var(--ink-faint);
+  --color-good: var(--good);
+  --color-good-bg: var(--good-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--surface); color: var(--ink);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01";
+  }
+  ::selection { background: color-mix(in srgb, var(--brand) 22%, transparent); }
+  :focus-visible { outline: 2px solid var(--brand-ink); outline-offset: 2px; border-radius: 6px; }
+  button { cursor: pointer; }
+}
+
+/* Dotted ground, as on the Compass cards. */
+.dots { background-image: radial-gradient(var(--dot) 1px, transparent 1.2px); background-size: 14px 14px; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* A soft light that follows the pointer across a card (--mx / --my set in JS). */
+.glow { position: relative; isolation: isolate; }
+.glow::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; opacity: 0;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--brand) 9%, transparent), transparent 60%);
+  transition: opacity .3s;
+}
+.glow:hover::before { opacity: 1; }
+
+/* Theme switch: the new theme spreads from the toggle (View Transitions). */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+
+/* ---------- the workbook grid ---------- */
+.xlwrap { overflow: auto; border-radius: 14px; border: 1px solid var(--hairline); background: var(--surface-raised); box-shadow: var(--shadow-sm); }
+table.xl { border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 12.5px; color: var(--ink-body); }
+table.xl td {
+  border-right: 1px solid var(--divider); border-bottom: 1px solid var(--divider);
+  padding: 5px 8px; vertical-align: middle; white-space: pre-wrap; word-break: break-word; line-height: 1.35;
+}
+table.xl tr.blank td { height: 8px; padding: 0; border-color: transparent; }
+table.xl td.n { text-align: right; font-variant-numeric: tabular-nums; }
+table.xl td.fx { font-variant-numeric: tabular-nums; }
+table.xl td.in { background: var(--cream); padding: 0; box-shadow: inset 0 0 0 1px var(--cream-edge); }
+table.xl td.in input, table.xl td.in select {
+  width: 100%; height: 100%; min-height: 30px; border: 0; background: transparent; color: var(--ink);
+  font: inherit; padding: 5px 8px; outline: none; text-align: inherit;
+}
+table.xl td.in input[inputmode="decimal"] { text-align: right; font-variant-numeric: tabular-nums; }
+table.xl td.in:focus-within { box-shadow: inset 0 0 0 2px var(--brand-ink); background: var(--surface-raised); }
+table.xl td.in.bad { box-shadow: inset 0 0 0 2px var(--bad); }
+table.xl td.xchart { padding: 18px; background: var(--surface-raised); }
+@keyframes cellflash { from { background-color: color-mix(in srgb, var(--accent) 45%, transparent); } }
+.flash { animation: cellflash 1.1s var(--ease-out-quint, ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+@keyframes pop { from { opacity: 0; transform: scale(.96) translateY(-4px); } }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

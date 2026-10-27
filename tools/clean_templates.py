@@ -1,4 +1,4 @@
-"""Copy the NAAC metric workbooks into templates/ with the source university's
+"""Copy the NAAC metric workbooks into public/templates/ with the source university's
 name replaced by placeholders. Edits the XML inside each .xlsx so formatting,
 validations and charts are kept exactly.
 
@@ -36,6 +36,6 @@ def clean(src: Path, out_dir: Path) -> Path:
     return dst
 
 if __name__ == "__main__":
-    out = Path(__file__).resolve().parent.parent / "templates"
+    out = Path(__file__).resolve().parent.parent / "public" / "templates"
     for f in sorted(Path(sys.argv[1]).glob("NAAC_Metric_*.xlsx")):
         print(clean(f, out).name)
