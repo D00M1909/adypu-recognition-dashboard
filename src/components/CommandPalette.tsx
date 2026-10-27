@@ -72,7 +72,11 @@ export function CommandPalette() {
                   <Command.Item className={item} onSelect={() => go(() => { WORKBOOK_LIST.forEach(w => w.loadSample()); toast.success('Sample data loaded in all four metrics'); })}>
                     <Sparkles size={16} className="text-muted" />Load sample data
                   </Command.Item>
-                  <Command.Item className={item} onSelect={() => go(() => { WORKBOOK_LIST.filter(w => w.isSample).forEach(w => w.clear()); toast('Sample data cleared'); })}>
+                  <Command.Item className={item} onSelect={() => go(() => {
+                    const on = WORKBOOK_LIST.filter(w => w.isSample);
+                    on.forEach(w => w.clear());
+                    toast(on.length ? 'Sample data cleared' : 'No sample data to clear');
+                  })}>
                     <Trash2 size={16} className="text-muted" />Clear sample data
                   </Command.Item>
                   <Command.Item className={item} onSelect={() => go(() => toggleMode())}><Moon size={16} className="text-muted" />Switch light / dark</Command.Item>

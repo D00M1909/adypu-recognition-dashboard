@@ -3,7 +3,6 @@
 
 import { useSyncExternalStore } from 'react';
 import { flushSync } from 'react-dom';
-import { write } from './persist';
 
 export type Mode = 'light' | 'dark';
 const subs = new Set<() => void>();
@@ -13,15 +12,21 @@ export const useMode = () => useSyncExternalStore(f => { subs.add(f); return () 
 
 export function toggleMode(from?: { x: number; y: number }) {
   const next: Mode = get() === 'dark' ? 'light' : 'dark';
+  let done = false;
   const apply = () => {
+    if (done) return;
+    done = true;
     document.documentElement.dataset.theme = next;
-    write('mode', next);
+    // Stored as a bare word: index.html reads it before any script loads, without JSON.
+    try { localStorage.setItem('mode', next); } catch { /* private mode: the choice lasts this visit */ }
     flushSync(() => subs.forEach(f => f()));
   };
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!document.startViewTransition || reduce) return apply();
   const x = from?.x ?? innerWidth - 40, y = from?.y ?? 40;
   const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  // A transition waits for the page to paint; a tab that isn't painting still switches.
+  setTimeout(apply, 400);
   document.startViewTransition(apply).ready.then(() => {
     document.documentElement.animate(
       { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },

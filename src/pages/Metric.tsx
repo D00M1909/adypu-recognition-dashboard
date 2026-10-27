@@ -23,10 +23,11 @@ export function Metric() {
 function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
   useWorkbook(wb);
   const nav = useNavigate();
-  const tabs = sheetTabs(wb), tab = findTab(wb, tabKey);
+  const tabs = sheetTabs(wb), tab = findTab(tabs, tabKey);
   const [report, setReport] = useState<(ImportReport & { name: string }) | null>(null);
   const file = useRef<HTMLInputElement>(null);
   const n = wb.entered(), total = wb.inputCount();
+  const goTab = (key: string) => { nav(`/a4/${wb.def.id}/${key}`, { replace: true }); scrollTo({ top: 0, behavior: 'smooth' }); };
 
   async function upload(f: File) {
     const before = { ...wb.values }, wasSample = wb.isSample;
@@ -139,8 +140,8 @@ function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
         {(() => {
           const i = tabs.indexOf(tab), prev = tabs[i - 1], next = tabs[i + 1];
           return <>
-            {prev ? <Button onClick={() => nav(`/a4/${wb.def.id}/${prev.key}`, { replace: true })}>← {prev.label}</Button> : <span />}
-            {next && <Button kind="solid" onClick={() => { nav(`/a4/${wb.def.id}/${next.key}`, { replace: true }); scrollTo({ top: 0, behavior: 'smooth' }); }}>{next.label} →</Button>}
+            {prev ? <Button onClick={() => goTab(prev.key)}>← {prev.label}</Button> : <span />}
+            {next && <Button kind="solid" onClick={() => goTab(next.key)}>{next.label} →</Button>}
           </>;
         })()}
       </div>

@@ -15,7 +15,5 @@ export function sheetTabs(wb: Workbook): SheetTab[] {
     { key: 'help', label: 'How to fill this', sheets: help, input: false },
   ];
 }
-export const findTab = (wb: Workbook, key?: string) => {
-  const tabs = sheetTabs(wb);
-  return tabs.find(t => t.key === key) || tabs.find(t => t.input)!;
-};
+/** The tab a URL names, out of `tabs`, falling back to the first sheet with inputs. */
+export const findTab = (tabs: SheetTab[], key?: string) => tabs.find(t => t.key === key) || tabs.find(t => t.input)!;
