@@ -48,7 +48,8 @@ export async function importFile(wb: Workbook, file: File): Promise<ImportReport
   return report;
 }
 
-export async function exportFile(wb: Workbook) {
+/** The template with the college's name in it, and with the entered data unless `blank`. */
+export async function exportFile(wb: Workbook, { blank = false } = {}) {
   const { default: JSZip } = await import('jszip');
   const res = await fetch(import.meta.env.BASE_URL + wb.def.file);
   if (!res.ok) throw new Error('Could not load the template file (' + res.status + ').');
@@ -68,7 +69,7 @@ export async function exportFile(wb: Workbook) {
     if (!path) continue;
     const doc = await xml(path), ns = doc.documentElement.namespaceURI;
     const cells = new Map([...doc.getElementsByTagName('c')].map(c => [c.getAttribute('r')!, c]));
-    for (const inp of wb.inputs.filter(i => i.si === si)) {
+    for (const inp of blank ? [] : wb.inputs.filter(i => i.si === si)) {
       const ref = XL.colName(inp.c) + inp.r;
       const el = cells.get(ref) || addCell(doc, ns, inp.r, ref);
       const v = wb.value(si, inp.r, inp.c);
@@ -97,7 +98,7 @@ export async function exportFile(wb: Workbook) {
   if (shared) zip.file('xl/sharedStrings.xml', brandText(await shared.async('string'), true));
   const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   const b = getBrand(), tag = (b.short || b.name).replace(/[^\w-]+/g, '_');
-  const name = wb.def.file.split('/').pop()!.replace('.xlsx', tag ? `_${tag}.xlsx` : '_filled.xlsx');
+  const name = wb.def.file.split('/').pop()!.replace('.xlsx', `${tag ? '_' + tag : ''}${blank ? '_blank' : tag ? '' : '_filled'}.xlsx`);
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);

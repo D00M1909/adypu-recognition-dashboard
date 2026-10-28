@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
-import { AlertTriangle, ChevronDown, Download, FileSpreadsheet, MoreHorizontal, Sparkles, Trash2, Upload, X } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, Download, FileSpreadsheet, MoreHorizontal, Sparkles, Trash2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { WORKBOOK_LIST, useWorkbook, workbookById, type Workbook } from '../engine/workbook';
-import { exportFile, importFile, type ImportReport } from '../engine/io';
+import { importFile, type ImportReport } from '../engine/io';
+import { downloadWorkbook } from '../lib/download';
 import { SHORT, results, splitVerdict } from '../lib/naac';
 import { Sheet } from '../components/Sheet';
 import { findTab, sheetLabel, sheetTabs } from '../components/sheetTabs';
 import { Button, CountUp, Eyebrow, Pill, btn, cn } from '../components/ui';
+import { FieldGroup, FilterSwitch, Legend, type FieldFilter } from '../components/Fields';
+import { fieldCounts, sheetFields, statusOf } from '../lib/fields';
 
 const A4_TOTAL = WORKBOOK_LIST.reduce((s, w) => s + w.def.marks, 0);
 
@@ -26,7 +29,8 @@ function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
   const tabs = sheetTabs(wb), tab = findTab(tabs, tabKey);
   const [report, setReport] = useState<(ImportReport & { name: string }) | null>(null);
   const file = useRef<HTMLInputElement>(null);
-  const n = wb.entered(), total = wb.inputCount();
+  const n = wb.entered(), fc = fieldCounts(wb);
+  useJumpToRow(tab.key);
   const goTab = (key: string) => { nav(`/a4/${wb.def.id}/${key}`, { replace: true }); scrollTo({ top: 0, behavior: 'smooth' }); };
 
   async function upload(f: File) {
@@ -40,11 +44,6 @@ function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
         action: { label: 'Undo', onClick: () => { wb.replace(before, wasSample); setReport(null); } },
       });
     } catch (e) { toast.error('Could not read that file', { id, description: (e as Error).message }); }
-  }
-  async function download() {
-    const id = toast.loading('Preparing the workbook…');
-    try { await exportFile(wb); toast.success('Downloaded', { id, description: 'Formulas recalculate when you open it in Excel or Google Sheets.' }); }
-    catch (e) { toast.error('Download failed', { id, description: (e as Error).message }); }
   }
   function withUndo(label: string, act: () => void) {
     const before = { ...wb.values }, wasSample = wb.isSample;
@@ -64,12 +63,12 @@ function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
         <div className="flex flex-wrap items-center gap-2">
           <input ref={file} type="file" accept=".xlsx,.xlsm,.xls,.ods" hidden onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }} />
           <Button kind="solid" onClick={() => file.current?.click()}><Upload size={16} />Upload Excel</Button>
-          <Button onClick={download}><Download size={16} />Download</Button>
+          <Button onClick={() => downloadWorkbook(wb)}><Download size={16} />Download</Button>
           <Dropdown.Root>
             <Dropdown.Trigger className={btn('ghost', 'w-9 px-0')} aria-label="More actions"><MoreHorizontal size={17} /></Dropdown.Trigger>
             <Dropdown.Portal>
               <Dropdown.Content align="end" sideOffset={6} className="z-50 min-w-[220px] origin-[var(--radix-dropdown-menu-content-transform-origin)] rounded-xl border border-hairline bg-raised p-1.5 shadow-lg data-[state=open]:animate-[pop_.16s_ease-out]">
-                <MenuItem onSelect={() => { location.href = import.meta.env.BASE_URL + wb.def.file; }}><FileSpreadsheet size={15} />Blank template</MenuItem>
+                <MenuItem onSelect={() => downloadWorkbook(wb, true)}><FileSpreadsheet size={15} />Blank template</MenuItem>
                 <MenuItem onSelect={() => withUndo(`Sample data loaded in ${wb.def.id}`, () => wb.loadSample())}><Sparkles size={15} />Load sample data</MenuItem>
                 <Dropdown.Separator className="my-1 h-px bg-divider" />
                 <MenuItem danger disabled={!n} onSelect={() => withUndo(`${wb.def.id} cleared`, () => { wb.clear(); setReport(null); })}><Trash2 size={15} />Clear all data</MenuItem>
@@ -102,19 +101,19 @@ function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
 
       <div className="mt-8 flex items-center gap-3">
         <div className="h-1 flex-1 overflow-hidden rounded-full bg-sunk">
-          <motion.div className="h-full rounded-full bg-brand" animate={{ width: `${n / total * 100}%` }} transition={{ type: 'spring', stiffness: 120, damping: 22 }} />
+          <motion.div className="h-full rounded-full bg-brand" animate={{ width: `${fc.done / fc.total * 100}%` }} transition={{ type: 'spring', stiffness: 120, damping: 22 }} />
         </div>
-        <span className="font-mono text-[11.5px] text-muted tabular"><CountUp text={String(n)} /> of {total} cells filled</span>
+        <span className="text-[12px] text-muted tabular"><b className="font-mono font-medium text-ink"><CountUp text={String(fc.done)} /></b> of {fc.total} fields filled</span>
       </div>
 
       <nav className="no-scrollbar sticky top-16 z-30 -mx-4 mt-3 overflow-x-auto bg-surface/85 px-4 backdrop-blur-md sm:-mx-6 sm:px-6" aria-label="Workbook sheets">
         <div className="flex min-w-max gap-1 border-b border-hairline">
           {tabs.map(t => {
-            const on = t === tab, done = t.input ? wb.entered(t.sheets[0]) / wb.inputCount(t.sheets[0]) : 0;
+            const on = t === tab, c = t.input ? fieldCounts(wb, t.sheets[0]) : null, done = c && c.total ? c.done / c.total : 0;
             return (
               <Link key={t.key} to={`/a4/${wb.def.id}/${t.key}`} replace
                 className={cn('relative flex items-center gap-2 px-3 py-3 text-[13.5px] font-medium transition-colors', on ? 'text-ink' : 'text-muted hover:text-ink', t.key === 'help' && 'ml-auto')}>
-                {t.input && <Ring v={done} />}
+                {c && c.total > 0 && <Ring v={done} />}
                 {t.label}
                 {on && <motion.span layoutId="sheet-tab" className="absolute inset-x-2 -bottom-px h-[2.5px] rounded-full bg-brand" transition={{ type: 'spring', stiffness: 520, damping: 40 }} />}
               </Link>
@@ -123,6 +122,7 @@ function MetricPage({ wb, tabKey }: { wb: Workbook; tabKey?: string }) {
         </div>
       </nav>
 
+      {tab.input && <SheetChecklist key={tab.key} wb={wb} si={tab.sheets[0]} />}
       {tab.input && <p className="mt-4 text-[13px] text-muted">Type in the <span className="rounded bg-[var(--cream)] px-1.5 py-0.5 text-ink ring-1 ring-[var(--cream-edge)]">cream</span> cells or upload the filled Excel. Everything else calculates itself: hover a cell to see its formula. Enter moves down.</p>}
 
       <AnimatePresence mode="wait" initial={false}>
@@ -259,4 +259,57 @@ function DropZone({ wb, onFile, children }: { wb: Workbook; onFile: (f: File) =>
       </AnimatePresence>
     </>
   );
+}
+
+/* The current sheet's fields, filled and not, above its grid. */
+function SheetChecklist({ wb, si }: { wb: Workbook; si: number }) {
+  const sheet = sheetFields(wb).find(s => s.si === si);
+  const [open, setOpen] = useState(false), [filter, setFilter] = useState<FieldFilter>('missing');
+  if (!sheet || !sheet.fields.length) return null;
+  const done = sheet.fields.filter(f => statusOf(f) === 'done').length, n = sheet.fields.length, left = sheet.fields.filter(f => statusOf(f) !== 'done');
+  return (
+    <div className="mt-4 rounded-2xl border border-hairline bg-raised shadow-sm">
+      <button onClick={() => setOpen(o => !o)} aria-expanded={open} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+        <motion.span animate={{ rotate: open ? 90 : 0 }} className="text-muted"><ChevronRight size={16} /></motion.span>
+        <span className="text-[14px] font-semibold text-ink">{done} of {n} fields filled</span>
+        <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted">
+          {left.length ? <>Still to do: {left.slice(0, 4).map(f => f.code || f.label).join(', ')}{left.length > 4 && ` and ${left.length - 4} more`}</> : 'Every field on this sheet is filled.'}
+        </span>
+        <span className="hidden text-[12.5px] font-medium text-brand-ink sm:block">{open ? 'Hide' : 'Show'} fields</span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: .25 }} className="overflow-hidden">
+            <div className="border-t border-divider px-3 pb-3 pt-3 sm:px-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
+                <FilterSwitch value={filter} onChange={setFilter} counts={{ missing: n - done, filled: done, all: n }} />
+                <Legend />
+              </div>
+              <FieldGroup wb={wb} sheet={sheet} filter={filter} columns />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* Opened from a field (?row=12): bring that row into view and put the cursor in its first empty cell. */
+function useJumpToRow(tabKey: string) {
+  const [params, setParams] = useSearchParams();
+  const row = params.get('row');
+  useEffect(() => {
+    if (!row) return;
+    const t = setTimeout(() => {
+      const tr = document.querySelector<HTMLTableRowElement>(`table.xl tr[data-r="${row}"]`);
+      if (tr) {
+        tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        const inputs = [...tr.querySelectorAll<HTMLInputElement | HTMLSelectElement>('td.in input, td.in select')];
+        (inputs.find(i => !i.value) || inputs[0])?.focus({ preventScroll: true });
+        tr.classList.remove('rowflash'); void tr.offsetWidth; tr.classList.add('rowflash');
+      }
+      setParams(p => { p.delete('row'); return p; }, { replace: true });
+    }, 350);
+    return () => clearTimeout(t);
+  }, [row, tabKey, setParams]);
 }

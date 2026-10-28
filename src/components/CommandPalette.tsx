@@ -10,6 +10,7 @@ import { SHORT } from '../lib/naac';
 import { toggleMode } from '../lib/mode';
 import { sheetTabs } from './sheetTabs';
 import { toast } from 'sonner';
+import { downloadWorkbook } from '../lib/download';
 
 const OPEN = 'palette:open';
 export const openPalette = () => window.dispatchEvent(new Event(OPEN));
@@ -82,7 +83,7 @@ export function CommandPalette() {
                   <Command.Item className={item} onSelect={() => go(() => toggleMode())}><Moon size={16} className="text-muted" />Switch light / dark</Command.Item>
                   {WORKBOOK_LIST.map(wb => (
                     <Command.Item key={'t' + wb.def.id} value={`blank template ${wb.def.id} ${SHORT[wb.def.id]}`} className={item}
-                      onSelect={() => go(() => { location.href = import.meta.env.BASE_URL + wb.def.file; })}>
+                      onSelect={() => go(() => downloadWorkbook(wb, true))}>
                       <FileSpreadsheet size={16} className="text-muted" />Blank template · {wb.def.id}
                     </Command.Item>
                   ))}

@@ -77,7 +77,7 @@ export function Sheet({ wb, si }: { wb: Workbook; si: number }) {
       any = true;
       cells.push(<Cell key={c} wb={wb} si={si} d={d} spanProps={spanProps} v={wb.version} />);
     }
-    rows.push(<tr key={r} className={any ? undefined : 'blank'}>{cells}</tr>);
+    rows.push(<tr key={r} data-r={r} className={any ? undefined : 'blank'}>{cells}</tr>);
   }
 
   return (

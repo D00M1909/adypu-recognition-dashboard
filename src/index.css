@@ -148,3 +148,5 @@ table.xl td.xchart { padding: 18px; background: var(--surface-raised); }
 @keyframes pop { from { opacity: 0; transform: scale(.96) translateY(-4px); } }
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+@keyframes rowflash { from { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--accent) 28%, transparent); } }
+table.xl tr.rowflash td { animation: rowflash 1.8s var(--ease-out-quint, ease-out); }

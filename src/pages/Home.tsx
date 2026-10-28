@@ -9,6 +9,8 @@ import { useBrand } from '../lib/brand';
 import { Dial } from '../components/Dial';
 import { Bars } from '../components/Bars';
 import { Button, CountUp, Dot, Eyebrow, Pill, cn, glowMove } from '../components/ui';
+import { FieldGroup, FilterSwitch, Legend, SheetProgress, type FieldFilter } from '../components/Fields';
+import { fieldCounts, sheetFields, statusOf } from '../lib/fields';
 
 const A4_TOTAL = WORKBOOK_LIST.reduce((s, w) => s + w.def.marks, 0);
 const rise: Variants = { hidden: { opacity: 0, y: 16 }, show: (i: number = 0) => ({ opacity: 1, y: 0, transition: { duration: .6, delay: i * .07, ease: [0.22, 1, 0.36, 1] } }) };
@@ -66,6 +68,8 @@ export function Home() {
         <p className="mt-4 text-[12.5px] text-muted">NAAC’s draft names the ratios for 4.1 and 4.2 without publishing how they are scored. Bands are the workbooks’ indicative guidance.</p>
       </section>
 
+      <FieldsOverview />
+
       <FrameworkStrip />
     </>
   );
@@ -84,7 +88,7 @@ function HoverReadout({ wb }: { wb: Workbook }) {
 
 function MetricCard({ wb, i, hot, onHover }: { wb: Workbook; i: number; hot: boolean; onHover: (id: string | null) => void }) {
   const [head, ...rest] = results(wb), chart = summaryChart(wb);
-  const n = wb.entered(), total = wb.inputCount(), [verdict, gloss] = splitVerdict(head.text);
+  const fc = fieldCounts(wb), [verdict, gloss] = splitVerdict(head.text);
   const ratio = /×$|%$/.test(head.text);
   const band = ratio ? rest.find(r => r.label.startsWith('Band')) : undefined;
   return (
@@ -126,9 +130,9 @@ function MetricCard({ wb, i, hot, onHover }: { wb: Workbook; i: number; hot: boo
 
         <div className="mt-auto flex items-center gap-3 pt-5">
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-sunk">
-            <motion.div className="h-full rounded-full bg-brand" initial={{ width: 0 }} animate={{ width: `${n / total * 100}%` }} transition={{ duration: .9, ease: [0.22, 1, 0.36, 1] }} />
+            <motion.div className="h-full rounded-full bg-brand" initial={{ width: 0 }} animate={{ width: `${fc.done / fc.total * 100}%` }} transition={{ duration: .9, ease: [0.22, 1, 0.36, 1] }} />
           </div>
-          <span className="shrink-0 font-mono text-[11.5px] text-muted">{wb.isSample ? 'sample' : `${n}/${total}`}</span>
+          <span className="shrink-0 text-[12px] text-muted"><b className="font-mono font-medium text-ink">{fc.done}</b> of {fc.total} fields filled{wb.isSample && ' · sample'}</span>
           <ArrowUpRight size={18} className="shrink-0 text-faint transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-ink" />
         </div>
       </Link>
@@ -163,6 +167,53 @@ function FrameworkStrip() {
       <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-divider pt-5">
         <span className="mr-1 text-[12.5px] font-medium text-soft">Coming next</span>
         {COMING.map(c => <span key={c} className="rounded-full border border-hairline px-3 py-1 text-[12.5px] text-soft">{c}</span>)}
+      </div>
+    </section>
+  );
+}
+
+/* Every metric's fields by heading: what's filled and what's still to do. */
+function FieldsOverview() {
+  const [id, setId] = useState(WORKBOOK_LIST[0].def.id);
+  const [filter, setFilter] = useState<FieldFilter>('missing');
+  const wb = WORKBOOK_LIST.find(w => w.def.id === id)!, sheets = sheetFields(wb);
+  const all = sheets.flatMap(s => s.fields), done = all.filter(f => statusOf(f) === 'done').length;
+  return (
+    <section className="mt-14">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-[24px] font-bold text-ink">What’s filled so far</h2>
+          <p className="mt-1 text-[13.5px] text-soft">Every field by its heading. Open one to fill it in.</p>
+        </div>
+        <Legend />
+      </div>
+      <div className="rounded-2xl border border-hairline bg-raised shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider p-3 sm:px-5">
+          <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1">
+            {WORKBOOK_LIST.map(w => {
+              const c = fieldCounts(w), on = w.def.id === id;
+              return (
+                <button key={w.def.id} onClick={() => setId(w.def.id)}
+                  className={cn('relative shrink-0 rounded-lg px-3 py-1.5 text-left transition-colors', on ? 'text-ink' : 'text-muted hover:text-ink')}>
+                  {on && <motion.span layoutId="fields-metric" className="absolute inset-0 rounded-lg bg-sunk" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
+                  <span className="relative block font-mono text-[12.5px] font-medium">{w.def.id}</span>
+                  <span className="relative block text-[11.5px]">{c.done}/{c.total} fields</span>
+                </button>
+              );
+            })}
+          </div>
+          <FilterSwitch value={filter} onChange={setFilter}
+            counts={{ missing: all.length - done, filled: done, all: all.length }} />
+        </div>
+        <motion.div key={id + filter} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .2 }}
+          className="grid gap-x-8 gap-y-6 p-4 sm:p-6 lg:grid-cols-2">
+          {sheets.map(sh => (
+            <div key={sh.si} className="min-w-0">
+              <div className="mb-2 border-b border-divider pb-2"><SheetProgress sheet={sh} /></div>
+              <FieldGroup wb={wb} sheet={sh} filter={filter} />
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
