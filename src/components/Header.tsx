@@ -8,6 +8,7 @@ import { cn } from './ui';
 
 const NAV = [
   { to: '/', label: 'Overview', match: (p: string) => p === '/' || p.startsWith('/a4') },
+  { to: '/nba', label: 'NBA', match: (p: string) => p.startsWith('/nba') },
   { to: '/naac', label: 'Framework', match: (p: string) => p.startsWith('/naac') },
   { to: '/brand', label: 'Customise', match: (p: string) => p.startsWith('/brand') },
 ];
@@ -24,7 +25,7 @@ export function Header() {
             : <span className="grid size-11 shrink-0 place-items-center rounded-[10px] bg-accent font-serif text-[15px] font-bold text-accent-ink">{(b.short || 'IQ').slice(0, 4)}</span>}
           <span className="hidden min-w-0 border-l border-white/25 pl-3 sm:block">
             <span className="block truncate font-serif text-[17px] font-bold leading-tight">Recognition Dashboard</span>
-            <span className="block truncate text-[11.5px] text-white/70">{b.short || b.name || 'Your college'} · NAAC readiness</span>
+            <span className="block truncate text-[11.5px] text-white/70">{b.short || b.name || 'Your college'} · NAAC &amp; NBA readiness</span>
           </span>
         </Link>
 

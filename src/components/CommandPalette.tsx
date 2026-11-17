@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Command } from 'cmdk';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, FileSpreadsheet, LayoutGrid, Moon, Palette, Sparkles, Table2, Trash2, Landmark } from 'lucide-react';
+import { ArrowRight, BookOpen, FileSpreadsheet, GraduationCap, LayoutGrid, Moon, Palette, Settings2, Sparkles, Table2, Trash2, Landmark, Users } from 'lucide-react';
+import { useNba } from '../nba/model';
 import { WORKBOOK_LIST } from '../engine/workbook';
 import { SHORT } from '../lib/naac';
 import { toggleMode } from '../lib/mode';
@@ -18,6 +19,7 @@ export const openPalette = () => window.dispatchEvent(new Event(OPEN));
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
+  const nba = useNba();
 
   useEffect(() => {
     const show = () => setOpen(true);
@@ -52,6 +54,16 @@ export function CommandPalette() {
                   <Command.Item className={item} onSelect={() => go(() => nav('/'))}><LayoutGrid size={16} className="text-muted" />Overview</Command.Item>
                   <Command.Item className={item} onSelect={() => go(() => nav('/naac'))}><Landmark size={16} className="text-muted" />NAAC framework</Command.Item>
                   <Command.Item className={item} onSelect={() => go(() => nav('/brand'))}><Palette size={16} className="text-muted" />Customise branding</Command.Item>
+                </Command.Group>
+                <Command.Group heading="NBA · Criterion 3" className={group}>
+                  <Command.Item className={item} value="nba overview co po pso attainment" onSelect={() => go(() => nav('/nba'))}><GraduationCap size={16} className="text-muted" />CO, PO &amp; PSO attainment</Command.Item>
+                  <Command.Item className={item} value="nba indirect assessment surveys" onSelect={() => go(() => nav('/nba/indirect'))}><Users size={16} className="text-muted" />Indirect assessment · surveys</Command.Item>
+                  <Command.Item className={item} value="nba setup weightages targets programme outcomes" onSelect={() => go(() => nav('/nba/setup'))}><Settings2 size={16} className="text-muted" />Setup &amp; weightages</Command.Item>
+                  {nba.courses.map(c => (
+                    <Command.Item key={c.id} value={`nba course ${c.code} ${c.name}`} className={item} onSelect={() => go(() => nav(`/nba/c/${c.id}`))}>
+                      <BookOpen size={16} className="text-muted" /><span className="w-10 font-mono text-[12px] text-brand-ink">{c.code}</span><span className="truncate">{c.name}</span>
+                    </Command.Item>
+                  ))}
                 </Command.Group>
                 <Command.Group heading="Attribute 4 metrics" className={group}>
                   {WORKBOOK_LIST.map(wb => (

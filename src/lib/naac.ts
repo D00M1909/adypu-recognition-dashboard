@@ -19,7 +19,7 @@ export const NAAC_ATTRIBUTES = [
 ];
 export const NAAC_TOTAL = NAAC_ATTRIBUTES.reduce((s, a) => s + a.marks, 0);
 
-export const COMING = ['NAAC attributes 1–3, 5–10', 'NIRF', 'NBA', 'QS & THE rankings', 'IIC & GreenMetric', 'Awards register'];
+export const COMING = ['NAAC attributes 1–3, 5–10', 'NIRF', 'QS & THE rankings', 'IIC & GreenMetric', 'Awards register'];
 
 export const SHORT: Record<string, string> = {
   '4.1': 'Capital income vs expenditure', '4.2': 'Revenue income vs expenditure',

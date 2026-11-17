@@ -7,12 +7,18 @@ import { Home } from './pages/Home';
 import { Metric } from './pages/Metric';
 import { Framework } from './pages/Framework';
 import { Customise } from './pages/Customise';
+import { NbaHome } from './pages/nba/NbaHome';
+import { NbaCourse } from './pages/nba/NbaCourse';
+import { NbaIndirect } from './pages/nba/NbaIndirect';
+import { NbaSetup } from './pages/nba/NbaSetup';
+import { NbaYears } from './pages/nba/NbaYears';
 import { useMode } from './lib/mode';
 
 function Pages() {
   const loc = useLocation();
   // Switching a metric's sheet tab stays on the same page; anything else is a new page.
-  const key = loc.pathname.startsWith('/a4/') ? loc.pathname.split('/').slice(0, 3).join('/') : loc.pathname;
+  const key = loc.pathname.startsWith('/a4/') ? loc.pathname.split('/').slice(0, 3).join('/')
+    : loc.pathname.startsWith('/nba/c/') ? '/nba/c' : loc.pathname;
   return (
     // Scroll to the top once the old page has faded out, not while it is still showing.
     <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo({ top: 0 })}>
@@ -23,6 +29,11 @@ function Pages() {
           <Route path="/naac" element={<Framework />} />
           <Route path="/brand" element={<Customise />} />
           <Route path="/a4/:id/:tab?" element={<Metric />} />
+          <Route path="/nba" element={<NbaHome />} />
+          <Route path="/nba/setup" element={<NbaSetup />} />
+          <Route path="/nba/years" element={<NbaYears />} />
+          <Route path="/nba/indirect" element={<NbaIndirect />} />
+          <Route path="/nba/c/:id/:tab?" element={<NbaCourse />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </motion.main>

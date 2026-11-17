@@ -165,7 +165,9 @@ function FrameworkStrip() {
         <span className="flex items-center gap-1.5"><i className="size-2.5 rounded-[3px] bg-sunk ring-1 ring-hairline" />Coming</span>
       </div>
       <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-divider pt-5">
-        <span className="mr-1 text-[12.5px] font-medium text-soft">Coming next</span>
+        <span className="mr-1 text-[12.5px] font-medium text-soft">Also open</span>
+        <Link to="/nba" className="group flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-[12.5px] font-medium text-white shadow-sm transition hover:brightness-110">NBA Criterion 3 · CO–PO attainment <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" /></Link>
+        <span className="ml-3 mr-1 text-[12.5px] font-medium text-soft">Coming next</span>
         {COMING.map(c => <span key={c} className="rounded-full border border-hairline px-3 py-1 text-[12.5px] text-soft">{c}</span>)}
       </div>
     </section>
